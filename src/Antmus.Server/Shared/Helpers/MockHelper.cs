@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using System.Text.Encodings.Web;
 
 namespace Antmus.Server;
 
@@ -21,7 +21,9 @@ public class MockHelper
     {
         CreateDirectory();
 
-        foreach (var file in Directory.GetFiles(this.mocksPath, "*.json"))
+        var files = Directory.GetFiles(this.mocksPath, "*.json").Where(w => !w.EndsWith(".custom.json"));
+
+        foreach (var file in files)
         {
             var nameSplit = Path.GetFileNameWithoutExtension(file).Split('_');
             var method = nameSplit[0];
@@ -37,14 +39,15 @@ public class MockHelper
             Directory.CreateDirectory(mocksPath);
     }
 
-    public Response this[Request request]
+    public Response? this[RequestIdentifier identifier]
     {
         get
         {
-            if (request == null) throw new ArgumentNullException("Request");
-            var item = this.Values.FirstOrDefault(f => f.Item1 == request.Method && f.Item2 == request.Hash);
+            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
 
-            if (item == null) throw new KeyNotFoundException($"{request.Method}/{request.Hash}");
+            var item = this.Values.FirstOrDefault(f => f.Item1 == identifier.Method && f.Item2 == identifier.Hash);
+
+            if (item == null) return null;
 
             var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(item.Item3));
 
@@ -52,11 +55,11 @@ public class MockHelper
         }
     }
 
-    public async Task Save(Request request, Response response)
+    public async Task Save(RequestIdentifier request, Response response)
     {
-        var entry = new { Request = request, Response = response };
+        var entry = new { Request = request.GetRequest(), Response = response };
 
-        var json = JsonSerializer.Serialize(entry, options: new() { WriteIndented = true });
+        var json = JsonSerializer.Serialize(entry, options: new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
         CreateDirectory();
 

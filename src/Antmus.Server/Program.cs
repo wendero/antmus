@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<RecorderEngine>();
 builder.Services.AddSingleton<MockEngine>();
 builder.Services.AddSingleton<MockHelper>();
+builder.Services.AddSingleton<CustomMockHelper>();
 
 var origins = builder.Configuration.GetValue<string>("AllowedOrigins");
 var corsEnabled = !string.IsNullOrEmpty(origins);
@@ -29,7 +30,6 @@ if (corsEnabled)
     var corsDefaultPolicy = corsBuilder.Build();
     builder.Services.AddCors(o => o.AddDefaultPolicy(corsDefaultPolicy));
 }
-
 
 builder.Services.AddSingleton<IHttpEngine>((provider) =>
 {
@@ -66,5 +66,7 @@ if (corsEnabled)
 }
 
 app.Map("/{*args}", (HttpContext context) => context.RequestServices.GetService<IHttpEngine>()!.Handle(context));
+
+app.Services.GetRequiredService<IHttpEngine>(); //warm up
 
 app.Run();
