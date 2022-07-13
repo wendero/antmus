@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Antmus.Server": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Mode": "$(Configuration)"
+      },
+      "applicationUrl": "http://localhost:57582"
+    }
+  }
+}
