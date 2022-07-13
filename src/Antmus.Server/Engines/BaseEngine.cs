@@ -88,6 +88,7 @@ public abstract class BaseEngine
             }
         }
     }
+    private static string[] textTypes = new string[] { "application/json", "application/problem+json" };
     public static bool IsTextType(string mimeType)
-        => mimeType.StartsWith("text/") || mimeType == "application/json";
+        => mimeType.StartsWith("text/") || textTypes.Contains(mimeType);
 }
