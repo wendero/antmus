@@ -1,4 +1,6 @@
-﻿namespace Antmus.Server;
+﻿using System.Text.Encodings.Web;
+
+namespace Antmus.Server;
 
 public class CustomMockHelper
 {
@@ -62,5 +64,19 @@ public class CustomMockHelper
             
             return null;
         }
+    }
+    public async Task Save(CustomRequest request, Response response, string filename)
+    {
+        var entry = new CustomEntry(request, response);
+
+        var json = JsonSerializer.Serialize(entry, options: new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+
+        CreateDirectory();
+
+        var filePath = Path.Combine(this.mocksPath, $"{filename}.custom.json");
+
+        log.LogInformation("Writing custom mock {filePath}", filePath);
+
+        await File.WriteAllTextAsync(filePath, json);
     }
 }

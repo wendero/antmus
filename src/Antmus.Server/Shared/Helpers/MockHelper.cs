@@ -63,7 +63,8 @@ public class MockHelper
 
         CreateDirectory();
 
-        var filePath = Path.Combine(this.mocksPath, $"{entry.Request.Method}_{request.Hash}.json");
+        var filename = $"{entry.Request.Method}_{request.Hash}.json";
+        var filePath = Path.Combine(this.mocksPath, filename);
         
         log.LogInformation("Writing mock {filePath}", filePath);
 

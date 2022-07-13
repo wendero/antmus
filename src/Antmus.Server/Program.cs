@@ -7,6 +7,7 @@ builder.Services.AddSingleton<RecorderEngine>();
 builder.Services.AddSingleton<MockEngine>();
 builder.Services.AddSingleton<MockHelper>();
 builder.Services.AddSingleton<CustomMockHelper>();
+builder.Services.AddControllers();
 
 var origins = builder.Configuration.GetValue<string>("AllowedOrigins");
 var corsEnabled = !string.IsNullOrEmpty(origins);
@@ -65,6 +66,7 @@ if (corsEnabled)
     app.UseCors();
 }
 
+app.MapControllers();
 app.Map("/{*args}", (HttpContext context) => context.RequestServices.GetService<IHttpEngine>()!.Handle(context));
 
 app.Services.GetRequiredService<IHttpEngine>(); //warm up
