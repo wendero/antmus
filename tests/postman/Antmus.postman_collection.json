@@ -1,0 +1,602 @@
+{
+	"info": {
+		"_postman_id": "a4ca1f7f-c2ce-43f3-aafb-b7fbe6dd8bdc",
+		"name": "Antmus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17317692"
+	},
+	"item": [
+		{
+			"name": "Recorder Mode",
+			"item": [
+				{
+					"name": "Check test API is running",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check data\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var hash = CryptoJS.MD5(JSON.stringify(jsonData)).toString();\r",
+									"    var expectedHash = pm.collectionVariables.get(\"hash_request\");\r",
+									"\r",
+									"    pm.expect(hash).to.equals(expectedHash);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/weatherforecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"weatherforecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Record Mock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check data\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var hash = CryptoJS.MD5(JSON.stringify(jsonData)).toString();\r",
+									"    var expectedHash = pm.collectionVariables.get(\"hash_request\");\r",
+									"\r",
+									"    pm.expect(hash).to.equals(expectedHash);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:57582/weatherforecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"weatherforecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - All Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockAllFilters\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": \"{\\\"Name\\\": \\\"Custom Mock\\\"}\",\r\n        \"Filters\": [\r\n            \"headers\",\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"All Filters\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Headers Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockHeadersFilter\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Filters\": [\r\n            \"headers\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Headers Filter\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Content Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockContentFilter\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Content\": \"{\\\"Name\\\": \\\"Custom Mock\\\"}\",\r\n        \"Filters\": [\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Content Filter\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Path Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockPathFilter\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\"\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Path Filter\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Default Mock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"default\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/defaultmock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": \"{\\\"Name\\\": \\\"Default Mock\\\"}\"\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 333,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Default Mock\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mock Mode",
+			"item": [
+				{
+					"name": "Recorded Mock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Check data\", function() {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var hash = CryptoJS.MD5(JSON.stringify(jsonData)).toString();\r",
+									"    var expectedHash = pm.collectionVariables.get(\"hash_request\");\r",
+									"\r",
+									"    pm.expect(hash).to.equals(expectedHash);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:57582/weatherforecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"weatherforecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - All Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"All Filters\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "antmus_CustomHeader",
+								"value": "CustomHeaderValue",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"Name\": \"Custom Mock\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/custommock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"custommock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Headers Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Headers Filter\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "antmus_CustomHeader",
+								"value": "CustomHeaderValue",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"Name\": \"Ignore Body\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/custommock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"custommock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Content Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Content Filter\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "antmus_CustomHeader",
+								"value": "CustomHeaderWrong",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"Name\": \"Custom Mock\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/custommock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"custommock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Path Filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Path Filter\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "antmus_CustomHeader",
+								"value": "CustomHeaderWrong",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"Name\": \"irrelevant\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/custommock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"custommock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Default Mock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Default Mock\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "antmus_CustomHeader",
+								"value": "CustomHeaderValue",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"Name\": \"Default Mock\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/defaultmock",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"defaultmock"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "hash_request",
+			"value": "3297ab5966c0613abfe4cb39750c3665"
+		}
+	]
+}

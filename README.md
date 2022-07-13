@@ -47,3 +47,12 @@ docker run -itd -e Redirect="<target api url>" --name antmus --rm -p5000:5000 an
 
 ## Headers
 Headers starting with the prefix `Antmus-` can be used to add idempotency to request with the same endpoint. For instance, a header `Antmus-Test-Sequence: <number>` can be used to make different responses for the same request once the header itself will be used as input ensuring that the mock is stateless. 
+
+## Antmus API
+When running in recorder mode Antmus has an API accesses by the `/_antmus` endpoint. Check the `Antmus.postman_collection.json` for examples on how to create mocks using Antmus API.
+
+## Mock Types
+Antmus has two mock types:
+- Default: a file in the format `Method_RequestHash.json` is created and Antmus reads the response On-Demand (on each call only the file needed will be read) based on the request auto-calculated hash.
+- Custom: a file with any name with extension `.custom.json`. This mock has a different behavior once it can use filters based on path, headers and content, to define the mock matching. 
+> Warning: Custom Mocks are loaded in memory during startup. Avoid huge request/responses.
