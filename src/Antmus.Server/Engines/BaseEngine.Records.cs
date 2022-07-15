@@ -14,9 +14,9 @@ public record RequestIdentifier
 
     public Request GetRequest() => new(Method, Path, Hash);
 
-    public static RequestIdentifier Create(string method, string path, Stream body, Dictionary<string, string> requestHeaders)
+    public static RequestIdentifier Create(string method, string path, Stream body, Dictionary<string, string> requestHeaders, string requestType)
     {
-        var hashBody = HashHelper.GetHash(body);
+        var hashBody = BaseEngine.IsJsonType(requestType) ? HashHelper.GetHash(new StreamReader(body).ReadToEndAsync().Result.Minify()) : HashHelper.GetHash(body);
         var hashPath = HashHelper.GetHash(path);
         var hashHeaders = HashHelper.GetHash(requestHeaders);
         var hash = HashHelper.GetHash(hashBody + hashPath + hashHeaders);
@@ -51,7 +51,13 @@ public record RequestIdentifier
         return identifier;
     }
 }
-public record Response(string Type, Dictionary<string, string> Headers, int StatusCode, string Content);
+public record Response
+{
+    public string Type { get; set; } = "";
+    public Dictionary<string, string> Headers { get; set; } = new();
+    public int StatusCode { get; set; }
+    public string? Content { get; set; } = null;
+}
 
 public record Request(string Method, string Path, string Hash);
 public record Entry(Request Request, Response Response);
@@ -62,7 +68,8 @@ public record CustomRequest
     public string Method { get; set; } = "";
     public string Path { get; set; } = "";
     public Dictionary<string, string> Headers { get; set; } = new();
-    public string Content { get; set; } = "";
+    public string? Content { get; set; } = null;
+    public string Type { get; set; } = "";
 
     public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
 }

@@ -59,7 +59,7 @@ public class MockHelper
     {
         var entry = new { Request = request.GetRequest(), Response = response };
 
-        var json = JsonSerializer.Serialize(entry, options: new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+        var json = JsonSerializer.Serialize(entry, JsonHelper.Options.Indented);
 
         CreateDirectory();
 

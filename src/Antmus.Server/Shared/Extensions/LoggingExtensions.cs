@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 
 namespace Antmus.Server.Shared.Extensions;
 
@@ -27,8 +28,7 @@ public static class LoggingExtensions
         {
             if (!logger.IsEnabled(level)) return;
 
-            var options = new JsonSerializerOptions { WriteIndented = false };
-            var json = JsonSerializer.Serialize(obj, options);
+            var json = JsonSerializer.Serialize(obj, JsonHelper.Options.Minified);
             logger.Log(level, $"{message} -> {json}");
         }
         catch (Exception ex)

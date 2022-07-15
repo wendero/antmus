@@ -9,9 +9,9 @@ public static class HashHelper
 
         return hex;
     }
-    public static string GetHash(string content)
+    public static string GetHash(string? content)
     {
-        var stream = new MemoryStream(System.Text.Encoding.Default.GetBytes(content));
+        var stream = new MemoryStream(System.Text.Encoding.Default.GetBytes(content ?? ""));
         return GetHash(stream);
     }
     public static string GetHash(Dictionary<string, string> dictionary)

@@ -27,7 +27,7 @@ public abstract class BaseEngine
             .ToDictionary(k => k.Key, v => v.Value.First())
                 ?? new Dictionary<string, string>();
 
-        var identifier = RequestIdentifier.Create(request.Method, path, requestBody, requestHeaders);
+        var identifier = RequestIdentifier.Create(request.Method, path, requestBody, requestHeaders, request.ContentType);
 
         Log.LogInformation($"Request hash {identifier.Hash}");
         Log.LogJson("Request", new
@@ -88,7 +88,9 @@ public abstract class BaseEngine
             }
         }
     }
-    private static string[] textTypes = new string[] { "application/json", "application/problem+json" };
+    private static string[] jsonTypes = new string[] { "application/json", "application/problem+json" };
     public static bool IsTextType(string mimeType)
-        => mimeType.StartsWith("text/") || textTypes.Contains(mimeType);
+        => mimeType is not null && (mimeType.StartsWith("text/") || IsJsonType(mimeType));
+    public static bool IsJsonType(string mimeType)
+        => mimeType is not null && jsonTypes.Contains(mimeType);
 }
