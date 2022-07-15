@@ -11,35 +11,65 @@ public abstract class BaseEngine
         this.Log = log;
         this.RequestHeadersConfig = configuration.GetSection("RequestHeaders").Get<IList<string>>() ?? new List<string>();
     }
-    public RequestIdentifier GetRequestIdentifier(HttpRequest request)
+    public RequestIdentifier GetRequestIdentifier(HttpRequest request, string body, Dictionary<string, string> headers)
     {
         Log.LogDebug();
-
-        request.EnableBuffering();
 
         var path = request.Path;
 
         Log.LogInformation("Request: {method} {path}", request.Method, path);
 
-        var requestBody = request.Body;
-        var requestHeaders = request.Headers
-            .Where(w => RequestHeadersConfig.Contains(w.Key) || w.Key.ToLower().StartsWith("antmus"))
-            .ToDictionary(k => k.Key, v => v.Value.First())
-                ?? new Dictionary<string, string>();
-
-        var identifier = RequestIdentifier.Create(request.Method, path, requestBody, requestHeaders, request.ContentType);
+        var identifier = RequestIdentifier.Create(request.Method, path, body, headers);
 
         Log.LogInformation($"Request hash {identifier.Hash}");
         Log.LogJson("Request", new
         {
             Path = path,
             Method = request.Method,
-            Headers = requestHeaders,
-            Body = new StreamReader(request.Body).ReadToEnd()
+            Headers = headers,
+            Body = body
         });
         Log.LogJson("Request Identifier hashes:", identifier);
 
         return identifier;
+    }
+    public Request GetRequest(HttpRequest request, out RequestIdentifier identifier)
+    {
+        Log.LogDebug();
+
+        var body = GetBodyAsString(request);
+        var headers = GetRequestHeaders(request);
+
+        identifier = this.GetRequestIdentifier(request, body, headers);
+
+        return new Request { Content = body, Hash = identifier.Hash, Headers = headers, Method = identifier.Method, Path = identifier.Path };
+    }
+    private static string GetBodyAsString(HttpRequest request)
+    {
+        request.EnableBuffering();
+        request.Body.Position = 0;
+
+        if (IsJsonType(request.ContentType))
+        {
+            var stream = new StreamReader(request.Body);
+            var json = stream.ReadToEndAsync().Result.Minify();
+            return json;
+        }
+
+        var memoryStream = new MemoryStream();
+        request.Body.CopyToAsync(memoryStream).Wait();
+        byte[] byteArray = memoryStream.ToArray();
+
+        return string.Join("", byteArray.Select(s => s.ToString("X2")));
+    }
+
+    private static Dictionary<string, string> GetRequestHeaders(HttpRequest request)
+    {
+        return request.Headers
+            .Where(w => RequestHeadersConfig.Contains(w.Key) || w.Key.ToLower().StartsWith("antmus"))
+            .OrderBy(o => o.Key)
+            .ToDictionary(k => k.Key, v => v.Value.First())
+                ?? new Dictionary<string, string>();
     }
 
     public static string ConvertByteArrayToHexString(IEnumerable<byte>? byteArray)
@@ -61,10 +91,10 @@ public abstract class BaseEngine
 
         return result;
     }
-    public async Task CreateResponse(HttpContext context, RequestIdentifier request, Response response)
+    public async Task CreateResponse(HttpContext context, RequestIdentifier requestIdentifier, Response response)
     {
-        Log.LogDebug(new { request, response});
-        Log.LogInformation("Sending response for {path} ({hash})", request.Path, request.Hash);
+        Log.LogDebug(new { requestIdentifier, response });
+        Log.LogInformation("Sending response for {path} ({hash})", requestIdentifier.Path, requestIdentifier.Hash);
 
         var httpResponse = context.Response;
         httpResponse.StatusCode = response.StatusCode;
@@ -77,8 +107,8 @@ public abstract class BaseEngine
         if (!string.IsNullOrWhiteSpace(response.Type))
         {
             httpResponse.ContentType = response.Type;
-            
-            if(!IsTextType(response.Type))
+
+            if (!IsTextType(response.Type))
             {
                 await httpResponse.BodyWriter.WriteAsync(ConvertHexStringToByteArray(response.Content).ToArray());
             }

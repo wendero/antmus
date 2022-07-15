@@ -39,13 +39,13 @@ public class MockHelper
             Directory.CreateDirectory(mocksPath);
     }
 
-    public Response? this[RequestIdentifier identifier]
+    public Response? this[RequestIdentifier request]
     {
         get
         {
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+            if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var item = this.Values.FirstOrDefault(f => f.Item1 == identifier.Method && f.Item2 == identifier.Hash);
+            var item = this.Values.FirstOrDefault(f => f.Item1 == request.Method && f.Item2 == request.Hash);
 
             if (item == null) return null;
 
@@ -55,9 +55,9 @@ public class MockHelper
         }
     }
 
-    public async Task Save(RequestIdentifier request, Response response)
+    public async Task Save(Request request, Response response)
     {
-        var entry = new { Request = request.GetRequest(), Response = response };
+        var entry = new { Request = request, Response = response };
 
         var json = JsonSerializer.Serialize(entry, JsonHelper.Options.Indented);
 

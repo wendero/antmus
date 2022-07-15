@@ -12,11 +12,9 @@ public record RequestIdentifier
     public string ContentHash { get; set; } = "";
     public string HeadersHash { get; set; } = "";
 
-    public Request GetRequest() => new(Method, Path, Hash);
-
-    public static RequestIdentifier Create(string method, string path, Stream body, Dictionary<string, string> requestHeaders, string requestType)
+    public static RequestIdentifier Create(string method, string path, string body, Dictionary<string, string> requestHeaders)
     {
-        var hashBody = BaseEngine.IsJsonType(requestType) ? HashHelper.GetHash(new StreamReader(body).ReadToEndAsync().Result.Minify()) : HashHelper.GetHash(body);
+        var hashBody = HashHelper.GetHash(body);
         var hashPath = HashHelper.GetHash(path);
         var hashHeaders = HashHelper.GetHash(requestHeaders);
         var hash = HashHelper.GetHash(hashBody + hashPath + hashHeaders);
@@ -32,7 +30,7 @@ public record RequestIdentifier
         };
         return identifier;
     }
-    public static RequestIdentifier Create(CustomRequest request)
+    public static RequestIdentifier Create(Request request)
     { 
         var hashPath = HashHelper.GetHash(request.Path);
         var hashBody = HashHelper.GetHash(request.Content);
@@ -44,8 +42,8 @@ public record RequestIdentifier
             Path = request.Path,
             Method = request.Method,
             PathHash = hashPath,
-            ContentHash = request.Filters.Contains(nameof(CustomRequest.Content).ToLower()) ? hashBody : "",
-            HeadersHash = request.Filters.Contains(nameof(CustomRequest.Headers).ToLower()) ? hashHeaders : "",
+            ContentHash = request.Filters.Contains(nameof(Request.Content).ToLower()) ? hashBody : "",
+            HeadersHash = request.Filters.Contains(nameof(Request.Headers).ToLower()) ? hashHeaders : "",
             Hash = hash
         };
         return identifier;
@@ -59,17 +57,15 @@ public record Response
     public string? Content { get; set; } = null;
 }
 
-public record Request(string Method, string Path, string Hash);
 public record Entry(Request Request, Response Response);
-
-public record CustomEntry(CustomRequest Request, Response Response);
-public record CustomRequest
+public record Request
 {
     public string Method { get; set; } = "";
     public string Path { get; set; } = "";
     public Dictionary<string, string> Headers { get; set; } = new();
     public string? Content { get; set; } = null;
     public string Type { get; set; } = "";
+    public string Hash { get; set; } = "";
 
     public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
 }

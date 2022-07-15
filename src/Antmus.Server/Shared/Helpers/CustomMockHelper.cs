@@ -25,7 +25,7 @@ public class CustomMockHelper
 
         foreach (var file in files)
         {
-            var entry = JsonSerializer.Deserialize<CustomEntry>(File.ReadAllText(file))!;
+            var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(file))!;
             this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
         }
     }
@@ -65,9 +65,9 @@ public class CustomMockHelper
             return null;
         }
     }
-    public async Task Save(CustomRequest request, Response response, string filename)
+    public async Task Save(Request request, Response response, string filename)
     {
-        var entry = new CustomEntry(request, response);
+        var entry = new Entry(request, response);
 
         var json = JsonSerializer.Serialize(entry, JsonHelper.Options.Indented);
 

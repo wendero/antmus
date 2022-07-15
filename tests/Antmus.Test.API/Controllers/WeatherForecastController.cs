@@ -32,5 +32,10 @@ namespace Antmus.Test.API.Controllers
             })
             .ToArray();
         }
+        [HttpPost]
+        public IActionResult Post([FromBody]WeatherForecast weatherForecast)
+        {
+            return StatusCode(201);
+        }
     }
 }

@@ -13,28 +13,29 @@
 
         public async Task Handle(HttpContext context)
         {
-            var request = GetRequestIdentifier(context.Request);
-            Log.LogDebug(request);
-            Log.LogInformation("Retrieving mock for {method} {path}", request.Method, request.Path);
+            var request = GetRequest(context.Request, out RequestIdentifier identifier);
+
+            Log.LogDebug(identifier);
+            Log.LogInformation("Retrieving mock for {method} {path}", identifier.Method, identifier.Path);
 
             try
             {
-                var mock = Mocks[request];
-                var customMock = CustomMocks[request];
+                var mock = Mocks[identifier];
+                var customMock = CustomMocks[identifier];
 
                 var response = mock ?? customMock;
                 if (response == null) throw new KeyNotFoundException();
 
-                await CreateResponse(context, request, response);
+                await CreateResponse(context, identifier, response);
             }
             catch (KeyNotFoundException ex)
             {
-                Log.LogError("Key not found {key} {path}", ex.Message, request.Path);
+                Log.LogError("Key not found {key} {path}", ex.Message, identifier.Path);
                 context.Response.StatusCode = 404;
             }
             catch(Exception ex)
             {
-                var errorMessage = $"Failed to retrieve mock for {request.Method} {request.Path}";
+                var errorMessage = $"Failed to retrieve mock for {identifier.Method} {identifier.Path}";
 
                 Log.LogError(errorMessage, ex);
                 Log.LogDebug(ex, ex.Message);

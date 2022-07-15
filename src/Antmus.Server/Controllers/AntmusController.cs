@@ -36,7 +36,10 @@ public class AntmusController : Controller
                 break;
             case "default":
             case "mock":
-                await this.Mocks.Save(RequestIdentifier.Create(mock.Request), mock.Response);
+                var identifier = RequestIdentifier.Create(mock.Request);
+                mock.Request.Hash = identifier.Hash;
+
+                await this.Mocks.Save(mock.Request, mock.Response);
                 break;
             default:
                 throw new InvalidMockType(mock.Type);
@@ -49,7 +52,7 @@ public class AntmusController : Controller
 internal class InvalidMockType : Exception { internal InvalidMockType(string type) : base($"Invalid mock type: {type}") { } }
 internal class AntmusModeNotRecorder : Exception { internal AntmusModeNotRecorder() : base($"Antmus mode is not Recorder") { } }
 public record MockProperties(string Type, string Name, RequestProperties Request, ResponseProperties Response);
-public record RequestProperties : CustomRequest
+public record RequestProperties : Request
 {
     public new object? Content
     {

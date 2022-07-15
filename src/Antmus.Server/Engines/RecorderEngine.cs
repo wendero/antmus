@@ -15,7 +15,8 @@ public class RecorderEngine : BaseEngine, IHttpEngine
 
     public async Task Handle(HttpContext context)
     {
-        var request = GetRequestIdentifier(context.Request);
+        var request = GetRequest(context.Request, out RequestIdentifier identifier);
+
         Log.LogDebug(request);
         Log.LogInformation("Recording mock for {method} {path}", request.Method, request.Path);
 
@@ -24,7 +25,7 @@ public class RecorderEngine : BaseEngine, IHttpEngine
             var response = await GetResponse(request, context.Request);
 
             await mock.Save(request, response);
-            await CreateResponse(context, request, response);
+            await CreateResponse(context, RequestIdentifier.Create(request), response);
         }
         catch (Exception ex)
         {
@@ -38,7 +39,7 @@ public class RecorderEngine : BaseEngine, IHttpEngine
         }
     }
 
-    private async Task<Response> GetResponse(RequestIdentifier request, HttpRequest httpRequest)
+    private async Task<Response> GetResponse(Request request, HttpRequest httpRequest)
     {
         Log.LogDebug(request);
         Log.LogInformation("Retrieving response for {method} {path}", request.Method, request.Path);
