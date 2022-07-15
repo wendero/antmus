@@ -68,6 +68,6 @@ public class RecorderEngine : BaseEngine, IHttpEngine
         var rawContent = !isText ? ConvertByteArrayToHexString(response.Content!.ReadAsByteArrayAsync().Result) : null;
         var content = (isText ? stringContent : rawContent)!;
 
-        return new Response(type, responseHeaders, (int)(response?.StatusCode ?? System.Net.HttpStatusCode.InternalServerError), content);
+        return new Response { Type = type, Headers = responseHeaders, StatusCode = (int)(response?.StatusCode ?? System.Net.HttpStatusCode.InternalServerError), Content = content };
     }
 }
