@@ -63,7 +63,7 @@ public abstract class BaseEngine
         return string.Join("", byteArray.Select(s => s.ToString("X2")));
     }
 
-    private static Dictionary<string, string> GetRequestHeaders(HttpRequest request)
+    private Dictionary<string, string> GetRequestHeaders(HttpRequest request)
     {
         return request.Headers
             .Where(w => RequestHeadersConfig.Contains(w.Key) || w.Key.ToLower().StartsWith("antmus"))
@@ -108,7 +108,7 @@ public abstract class BaseEngine
         {
             httpResponse.ContentType = response.Type;
 
-            if (!IsTextType(response.Type))
+            if (!IsTextOrJsonType(response.Type))
             {
                 await httpResponse.BodyWriter.WriteAsync(ConvertHexStringToByteArray(response.Content).ToArray());
             }
@@ -120,6 +120,8 @@ public abstract class BaseEngine
     }
     private static string[] jsonTypes = new string[] { "application/json", "application/problem+json" };
     public static bool IsTextType(string mimeType)
+        => mimeType is not null && (mimeType.StartsWith("text/"));
+    public static bool IsTextOrJsonType(string mimeType)
         => mimeType is not null && (mimeType.StartsWith("text/") || IsJsonType(mimeType));
     public static bool IsJsonType(string mimeType)
         => mimeType is not null && jsonTypes.Contains(mimeType);

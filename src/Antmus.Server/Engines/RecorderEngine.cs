@@ -64,7 +64,7 @@ public class RecorderEngine : BaseEngine, IHttpEngine
         var response = await client.SendAsync(message);
         var responseHeaders = response.Headers.Where(w => responseHeadersConfig?.Contains(w.Key) ?? false).ToDictionary(k => k.Key, v => v.Value.First()) ?? new Dictionary<string, string>();
         var type = response.Content?.Headers?.ContentType?.MediaType ?? "";
-        var isText = IsTextType(type);
+        var isText = IsTextOrJsonType(type);
         var stringContent = isText ? response.Content!.ReadAsStringAsync().Result : null;
         var rawContent = !isText ? ConvertByteArrayToHexString(response.Content!.ReadAsByteArrayAsync().Result) : null;
         var content = (isText ? stringContent : rawContent)!;

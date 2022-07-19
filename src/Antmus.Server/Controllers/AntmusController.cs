@@ -18,7 +18,7 @@ public class AntmusController : Controller
         this.Mocks = mockHelper;
         this.CustomMocks = customMockHelper;
         this.Log = logger;
-        
+
         _mockEngine = mockEngine;
     }
 
@@ -72,11 +72,17 @@ public record ResponseProperties : Response
     {
         get
         {
-            return string.IsNullOrEmpty(base.Content) ? null : JsonSerializer.Deserialize<object?>(base.Content);
+            if (base.Content is not null && BaseEngine.IsJsonType(this.Type))
+                return JsonSerializer.Deserialize<object?>(base.Content);
+            else
+                return base.Content;
         }
         set
         {
-            base.Content = JsonSerializer.Serialize(value, JsonHelper.Options.Minified);
+            if (value is not null && BaseEngine.IsJsonType(this.Type))
+                base.Content = JsonSerializer.Serialize(value, JsonHelper.Options.Minified);
+            else
+                base.Content = Convert.ToString(value);
         }
     }
 }
