@@ -69,6 +69,9 @@ if (corsEnabled)
 app.MapControllers();
 app.Map("/{*args}", (HttpContext context) => context.RequestServices.GetService<IHttpEngine>()!.Handle(context));
 
-app.Services.GetRequiredService<IHttpEngine>(); //warm up
+#region Warm Up
+app.Services.GetRequiredService<IHttpEngine>();
+app.Services.GetRequiredService<CustomMockHelper>();
+#endregion
 
 app.Run();

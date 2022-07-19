@@ -21,7 +21,7 @@
             try
             {
                 var mock = Mocks[identifier];
-                var customMock = CustomMocks[identifier];
+                var customMock = CustomMocks[identifier, request];
 
                 var response = mock ?? customMock;
                 if (response == null) throw new KeyNotFoundException();

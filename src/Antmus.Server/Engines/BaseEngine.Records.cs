@@ -1,4 +1,7 @@
-﻿namespace Antmus.Server.Engines;
+﻿using System.Text.RegularExpressions;
+using Rpn = RPN.RPN;
+
+namespace Antmus.Server.Engines;
 
 public record RequestIdentifier
 {
@@ -31,7 +34,7 @@ public record RequestIdentifier
         return identifier;
     }
     public static RequestIdentifier Create(Request request)
-    { 
+    {
         var hashPath = HashHelper.GetHash(request.Path);
         var hashBody = HashHelper.GetHash(request.Content);
         var hashHeaders = HashHelper.GetHash(request.Headers);
@@ -44,7 +47,7 @@ public record RequestIdentifier
             PathHash = hashPath,
             ContentHash = request.Filters.Contains(nameof(Request.Content).ToLower()) ? hashBody : "",
             HeadersHash = request.Filters.Contains(nameof(Request.Headers).ToLower()) ? hashHeaders : "",
-            Hash = hash
+            Hash = hash,
         };
         return identifier;
     }
@@ -67,5 +70,39 @@ public record Request
     public string Type { get; set; } = "";
     public string Hash { get; set; } = "";
 
+    public IList<string> Expressions { get; set; } = new List<string>();
+
     public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
+
+    public bool Matches(Request request)
+    {
+        //evaluate just Method and Path expressions
+        try
+        {
+            if (!(request.Method == this.Method || this.Method.Split(' ', ',', ';', '-', '|').Contains(request.Method))) return false;
+            if (!(request.Path == this.Path || new Regex($"^{this.Path}$").IsMatch(request.Path))) return false;
+
+            if (!this.Expressions.Any())
+                return true;
+        }
+        catch
+        {
+            return false;
+        }
+
+        //evaluate just Content expressions
+        foreach (var expression in this.Expressions)
+        {
+            try
+            {
+                if (Rpn.Evaluate(expression, request.Content))
+                    return true;
+            }
+            catch
+            {
+                continue;
+            }
+        }
+        return false;
+    }
 }

@@ -5,4 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Configurations>Release;Mock;Recorder</Configurations>
 	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="RPN.Net" Version="1.2.3" />
+	</ItemGroup>
 </Project>
