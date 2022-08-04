@@ -1,4 +1,6 @@
-﻿namespace Antmus.Server;
+﻿using System.Net.Http.Headers;
+
+namespace Antmus.Server;
 
 public abstract class BaseEngine
 {
@@ -10,6 +12,8 @@ public abstract class BaseEngine
     {
         this.Log = log;
         this.RequestHeadersConfig = configuration.GetSection("RequestHeaders").Get<IList<string>>() ?? new List<string>();
+
+        Log.LogJson("Request Headers", this.RequestHeadersConfig, LogLevel.Information);
     }
     public RequestIdentifier GetRequestIdentifier(HttpRequest request, string body, Dictionary<string, string> headers)
     {
@@ -44,8 +48,9 @@ public abstract class BaseEngine
 
         return new Request { Content = body, Hash = identifier.Hash, Headers = headers, Method = identifier.Method, Path = identifier.Path };
     }
-    private static string GetBodyAsString(HttpRequest request)
+    private string GetBodyAsString(HttpRequest request)
     {
+        Log.LogDebug(new { request.Method, request.Path, request.ContentType });
         request.EnableBuffering();
         request.Body.Position = 0;
 
@@ -53,14 +58,26 @@ public abstract class BaseEngine
         {
             var stream = new StreamReader(request.Body);
             var json = stream.ReadToEndAsync().Result.Minify();
+
+            Log.LogJson("Json body", json);
+
             return json;
+        }
+        else if (IsTextType(request.ContentType))
+        {
+            var textBody = new StreamReader(request.Body)
+                .ReadToEnd();
+            Log.LogJson("Text body", textBody);
+            return textBody;
         }
 
         var memoryStream = new MemoryStream();
         request.Body.CopyToAsync(memoryStream).Wait();
         byte[] byteArray = memoryStream.ToArray();
 
-        return string.Join("", byteArray.Select(s => s.ToString("X2")));
+        var otherBody = string.Join("", byteArray.Select(s => s.ToString("X2")));
+        Log.LogJson("Other body", otherBody);
+        return otherBody;
     }
 
     private Dictionary<string, string> GetRequestHeaders(HttpRequest request)
@@ -118,11 +135,17 @@ public abstract class BaseEngine
             }
         }
     }
-    private static string[] jsonTypes = new string[] { "application/json", "application/problem+json" };
     public static bool IsTextType(string mimeType)
         => mimeType is not null && (mimeType.StartsWith("text/"));
     public static bool IsTextOrJsonType(string mimeType)
         => mimeType is not null && (mimeType.StartsWith("text/") || IsJsonType(mimeType));
     public static bool IsJsonType(string mimeType)
-        => mimeType is not null && jsonTypes.Contains(mimeType);
+    {
+        if (!MediaTypeHeaderValue.TryParse(mimeType, out var mt)) return false;
+
+        if (mt.MediaType!.Equals("application/json", StringComparison.OrdinalIgnoreCase)) return true; // Matches application/json
+        if (mt.MediaType.Contains("+json", StringComparison.OrdinalIgnoreCase)) return true; // Matches +json, e.g. application/ld+json
+
+        return false;
+    }
 }

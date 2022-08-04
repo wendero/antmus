@@ -67,7 +67,6 @@ public record Request
     public string Path { get; set; } = "";
     public Dictionary<string, string> Headers { get; set; } = new();
     public string? Content { get; set; } = null;
-    public string Type { get; set; } = "";
     public string Hash { get; set; } = "";
 
     public IList<string> Expressions { get; set; } = new List<string>();
