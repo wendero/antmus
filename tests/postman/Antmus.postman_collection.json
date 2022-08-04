@@ -50,7 +50,7 @@
 					"response": []
 				},
 				{
-					"name": "Record Mock",
+					"name": "Record Mock Get",
 					"event": [
 						{
 							"listen": "test",
@@ -90,6 +90,47 @@
 					"response": []
 				},
 				{
+					"name": "Record Mock Post",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2022-02-02T00:00:00\",\r\n    \"temperatureC\": 31,\r\n    \"temperatureF\": 87,\r\n    \"summary\": \"Bracing\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/weatherforecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"weatherforecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Custom Mock - All Filters",
 					"event": [
 						{
@@ -109,7 +150,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockAllFilters\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": \"{\\\"Name\\\": \\\"Custom Mock\\\"}\",\r\n        \"Filters\": [\r\n            \"headers\",\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"All Filters\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockAllFilters\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": {\r\n            \"Name\": \"Custom Mock\"\r\n        },\r\n        \"Filters\": [\r\n            \"headers\",\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"application/json\",\r\n        \"Headers\": {},\r\n        \"Content\": {\r\n            \"Result\": \"All Filters\"\r\n        }\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -191,7 +232,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockContentFilter\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Content\": \"{\\\"Name\\\": \\\"Custom Mock\\\"}\",\r\n        \"Filters\": [\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Content Filter\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockContentFilter\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/custommock\",\r\n        \"Content\": {\r\n            \"Name\": \"Custom Mock\"\r\n        },\r\n        \"Filters\": [\r\n            \"content\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Content Filter\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -254,6 +295,170 @@
 					"response": []
 				},
 				{
+					"name": "Create Custom Mock - Expression Filter - Content",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockExpressionsFilterContent\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/expression\",\r\n        \"Expressions\": [\r\n            \"$0.Id 3 >\"\r\n        ],\r\n        \"Filters\": [\r\n            \"expressions\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Expression Filter - Content\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Expression Filter - Method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockExpressionsFilterMethod\",\r\n    \"Request\": {\r\n        \"Method\": \"POST PUT\",\r\n        \"Path\": \"/expression\",\r\n        \"Filters\": [\r\n            \"expressions\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Expression Filter - Method\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Expression Filter - Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockExpressionsFilterPath\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/expression/.*\",\r\n        \"Filters\": [\r\n            \"expressions\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Expression Filter - Path\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Mock - Expression Filter - All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Type\": \"custom\",\r\n    \"Name\": \"CustomMockExpressionsFilterAll\",\r\n    \"Request\": {\r\n        \"Method\": \"POST PUT\",\r\n        \"Path\": \"/expression/asdfg/.*\",\r\n        \"Expressions\": [\r\n            \"$0.Id 5 >\"\r\n        ],\r\n        \"Filters\": [\r\n            \"expressions\"\r\n        ]\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 222,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Expression Filter - All\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/_antmus",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"_antmus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Default Mock",
 					"event": [
 						{
@@ -273,7 +478,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Type\": \"default\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/defaultmock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": \"{\\\"Name\\\": \\\"Default Mock\\\"}\"\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 333,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Default Mock\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"Type\": \"default\",\r\n    \"Request\": {\r\n        \"Method\": \"POST\",\r\n        \"Path\": \"/defaultmock\",\r\n        \"Headers\": {\r\n            \"antmus_CustomHeader\": \"CustomHeaderValue\"\r\n        },\r\n        \"Content\": {\r\n            \"Name\": \"Default Mock\"\r\n        }\r\n    },\r\n    \"Response\": {\r\n        \"StatusCode\": 333,\r\n        \"Type\": \"text/plain\",\r\n        \"Headers\": {},\r\n        \"Content\": \"Default Mock\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -300,7 +505,7 @@
 			"name": "Mock Mode",
 			"item": [
 				{
-					"name": "Recorded Mock",
+					"name": "Recorded Mock Get",
 					"event": [
 						{
 							"listen": "test",
@@ -336,6 +541,47 @@
 					"response": []
 				},
 				{
+					"name": "Recorded Mock Post",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Date\": \"2022-02-02T00:00:00\",\r\n    \"TemperatureC\": 31,\r\n    \"Summary\": \"Bracing\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/weatherforecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"weatherforecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Custom Mock - All Filters",
 					"event": [
 						{
@@ -343,7 +589,8 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Body matches string\", function () {\r",
-									"    pm.expect(pm.response.text()).to.include(\"All Filters\");\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.Result).to.eql(\"All Filters\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -361,7 +608,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"Name\": \"Custom Mock\"}",
+							"raw": "{\r\n    \"Name\": \"Custom Mock\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -390,7 +637,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Body matches string\", function () {\r",
-									"    pm.expect(pm.response.text()).to.include(\"Headers Filter\");\r",
+									"    pm.expect(pm.response.text()).to.eq(\"Headers Filter\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -408,7 +655,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"Name\": \"Ignore Body\"}",
+							"raw": "{\r\n    \"Name\": \"Ignore Body\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -437,7 +684,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Body matches string\", function () {\r",
-									"    pm.expect(pm.response.text()).to.include(\"Content Filter\");\r",
+									"    pm.expect(pm.response.text()).to.eq(\"Content Filter\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -455,7 +702,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"Name\": \"Custom Mock\"}",
+							"raw": "{\r\n    \"Name\": \"Custom Mock\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -502,7 +749,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"Name\": \"irrelevant\"}",
+							"raw": "{\r\n    \"Name\": \"irrelevant\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -518,6 +765,173 @@
 							"port": "57582",
 							"path": [
 								"custommock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Expression Filter - Content",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.eq(\"Expression Filter - Content\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Id\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/expression",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"expression"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Expression Filter - Method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).is.eq(\"Expression Filter - Method\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Id\": \"irrelevant\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/expression",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"expression"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Expression Filter - Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).is.eq(\"Expression Filter - Path\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Id\": \"irrelevant\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/expression/bazinga",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"expression",
+								"bazinga"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Mock - Expression Filter - All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.eq(\"Expression Filter - All\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Id\": 8\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57582/expression/asdfg/qwerty",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57582",
+							"path": [
+								"expression",
+								"asdfg",
+								"qwerty"
 							]
 						}
 					},
@@ -549,7 +963,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"Name\": \"Default Mock\"}",
+							"raw": "{\r\n    \"Name\": \"Default Mock\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

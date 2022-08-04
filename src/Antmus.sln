@@ -5,21 +5,26 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Antmus.Server", "Antmus.Server\Antmus.Server.csproj", "{368678E7-B8A3-4933-A3C7-E1352C969090}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Antmus.Test.API", "..\tests\Antmus.Test.API\Antmus.Test.API.csproj", "{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Antmus.Test.API", "..\tests\Antmus.Test.API\Antmus.Test.API.csproj", "{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Mock|Any CPU = Mock|Any CPU
 		Recorder|Any CPU = Recorder|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{368678E7-B8A3-4933-A3C7-E1352C969090}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{368678E7-B8A3-4933-A3C7-E1352C969090}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Mock|Any CPU.ActiveCfg = Mock|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Mock|Any CPU.Build.0 = Mock|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Recorder|Any CPU.ActiveCfg = Recorder|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Recorder|Any CPU.Build.0 = Recorder|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{368678E7-B8A3-4933-A3C7-E1352C969090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}.Mock|Any CPU.ActiveCfg = Mock|Any CPU
 		{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}.Mock|Any CPU.Build.0 = Mock|Any CPU
 		{5F9041F0-B25B-41F5-9AC8-D1D60FA04F47}.Recorder|Any CPU.ActiveCfg = Recorder|Any CPU
