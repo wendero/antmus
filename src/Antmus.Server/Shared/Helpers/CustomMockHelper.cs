@@ -5,6 +5,7 @@ namespace Antmus.Server;
 public class CustomMockHelper
 {
     private Dictionary<RequestIdentifier, Response> Values { get; set; } = new();
+    private List<Entry> ExpressionEntries { get; set; } = new();
 
     private readonly ILogger<MockHelper> log;
     private readonly string mocksPath;
@@ -25,8 +26,11 @@ public class CustomMockHelper
 
         foreach (var file in files)
         {
-            var entry = JsonSerializer.Deserialize<CustomEntry>(File.ReadAllText(file))!;
-            this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
+            var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(file))!;
+            if (entry.Request.Filters.Contains("expressions"))
+                this.ExpressionEntries.Add(entry);
+            else
+                this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
         }
     }
 
@@ -36,7 +40,7 @@ public class CustomMockHelper
             Directory.CreateDirectory(mocksPath);
     }
 
-    public Response? this[RequestIdentifier identifier]
+    public Response? this[RequestIdentifier identifier, Request request]
     {
         get
         {
@@ -48,7 +52,6 @@ public class CustomMockHelper
 
             //search only for path filter
             var mocksWithPath = this.Values.Where(w => w.Key.PathHash == identifier.PathHash);
-            if(!mocksWithPath.Any()) return null;
             
             //search for path and headers filters
             var mocksWithHeaders = mocksWithPath.Where(w => w.Key.HeadersHash == identifier.HeadersHash && w.Key.ContentHash == "");
@@ -58,16 +61,23 @@ public class CustomMockHelper
             var mocksWithContent = mocksWithPath.Where(w => w.Key.ContentHash == identifier.ContentHash && w.Key.HeadersHash == "");
             if(mocksWithContent.Any()) return mocksWithContent.First().Value;
 
+            //search for expression filters
+            foreach (var mock in this.ExpressionEntries.Where(w => w.Request.Filters.Contains("expressions")))
+            {
+                if (mock.Request.Matches(request))
+                    return mock.Response;
+            }
+
             //if after all there still have at least a Path
             var mocksWithOnlyPath = this.Values.Where(w => w.Key.PathHash == identifier.PathHash && w.Key.ContentHash == "" && w.Key.HeadersHash == "");
             if (mocksWithOnlyPath.Any()) return mocksWithOnlyPath.First().Value;
-            
+
             return null;
         }
     }
-    public async Task Save(CustomRequest request, Response response, string filename)
+    public async Task Save(Request request, Response response, string filename)
     {
-        var entry = new CustomEntry(request, response);
+        var entry = new Entry(request, response);
 
         var json = JsonSerializer.Serialize(entry, JsonHelper.Options.Indented);
 

@@ -18,7 +18,7 @@ public class AntmusController : Controller
         this.Mocks = mockHelper;
         this.CustomMocks = customMockHelper;
         this.Log = logger;
-        
+
         _mockEngine = mockEngine;
     }
 
@@ -36,7 +36,10 @@ public class AntmusController : Controller
                 break;
             case "default":
             case "mock":
-                await this.Mocks.Save(RequestIdentifier.Create(mock.Request), mock.Response);
+                var identifier = RequestIdentifier.Create(mock.Request);
+                mock.Request.Hash = identifier.Hash;
+
+                await this.Mocks.Save(mock.Request, mock.Response);
                 break;
             default:
                 throw new InvalidMockType(mock.Type);
@@ -49,7 +52,7 @@ public class AntmusController : Controller
 internal class InvalidMockType : Exception { internal InvalidMockType(string type) : base($"Invalid mock type: {type}") { } }
 internal class AntmusModeNotRecorder : Exception { internal AntmusModeNotRecorder() : base($"Antmus mode is not Recorder") { } }
 public record MockProperties(string Type, string Name, RequestProperties Request, ResponseProperties Response);
-public record RequestProperties : CustomRequest
+public record RequestProperties : Request
 {
     public new object? Content
     {
@@ -69,11 +72,17 @@ public record ResponseProperties : Response
     {
         get
         {
-            return string.IsNullOrEmpty(base.Content) ? null : JsonSerializer.Deserialize<object?>(base.Content);
+            if (base.Content is not null && BaseEngine.IsJsonType(this.Type))
+                return JsonSerializer.Deserialize<object?>(base.Content);
+            else
+                return base.Content;
         }
         set
         {
-            base.Content = JsonSerializer.Serialize(value, JsonHelper.Options.Minified);
+            if (value is not null && BaseEngine.IsJsonType(this.Type))
+                base.Content = JsonSerializer.Serialize(value, JsonHelper.Options.Minified);
+            else
+                base.Content = Convert.ToString(value);
         }
     }
 }
