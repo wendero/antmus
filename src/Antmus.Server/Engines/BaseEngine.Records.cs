@@ -46,8 +46,8 @@ public record RequestIdentifier
             Path = request.Path,
             Method = request.Method,
             PathHash = hashPath,
-            ContentHash = request.Filters.Any(f => f.Field == (nameof(Request.Content).ToLower())) ? hashBody : "",
-            HeadersHash = request.Filters.Any(f => f.Field == (nameof(Request.Headers).ToLower())) ? hashHeaders : "",
+            ContentHash = request.Filters.Contains(nameof(Request.Content).ToLower()) ? hashBody : "",
+            HeadersHash = request.Filters.Contains(nameof(Request.Headers).ToLower()) ? hashHeaders : "",
             Hash = hash,
         };
         return identifier;
@@ -70,9 +70,8 @@ public record Request
     public string? Content { get; set; } = null;
     public string Hash { get; set; } = "";
 
-    public IList<(string Field, string Expression)> Expressions { get; set; } = new List<(string, string)>();
-
-    public IEnumerable<(string Field, string Expression)> Filters { get; set; } = Enumerable.Empty<(string, string)>();
+    public Dictionary<string, string> Expressions { get; set; } = new Dictionary<string, string>();
+    public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
 
     public bool Matches(Request request)
     {
@@ -80,7 +79,7 @@ public record Request
         try
         {
             if (!(request.Method == this.Method || this.Method.Split(' ', ',', ';', '-', '|').Contains(request.Method))) return false;
-            if (!(request.Path == this.Path || new Regex($"^{this.Path}$").IsMatch(request.Path))) return false;
+            if (!(request.Path.ToLowerInvariant() == this.Path.ToLowerInvariant() || new Regex($"^{this.Path}$").IsMatch(request.Path))) return false;
 
             if (!this.Expressions.Any())
                 return true;
@@ -117,13 +116,16 @@ public record Request
                         }
                     case "headers":
                         {
-                            var headerExpressionEntries = JsonSerializer.Deserialize<IEnumerable<(string Field, string Expression)>>(expression);
+                            var headerExpressionEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(expression);
+
                             if (headerExpressionEntries == null) break;
                             foreach (var (f,exp) in headerExpressionEntries)
                             {
-                                if (Rpn.Evaluate(exp, request.Headers.GetValueOrDefault(f) ?? ""))
+                                var valueToCheckAgainst = request.Headers.GetValueOrDefault(f);
+                                if (valueToCheckAgainst == null) break;
+                                if (Rpn.Evaluate<string>(exp, valueToCheckAgainst) == "true" ||
+                                    new Regex(exp).IsMatch(valueToCheckAgainst))
                                     return true;
-                                break;
                             }
                             break;
                         }

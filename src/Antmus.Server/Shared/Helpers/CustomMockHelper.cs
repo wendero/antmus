@@ -5,7 +5,7 @@ namespace Antmus.Server;
 public class CustomMockHelper
 {
     private Dictionary<RequestIdentifier, Response> Values { get; set; } = new();
-    private List<Entry> ExpressionEntries { get; set; } = new();
+    private List<Entry> EntriesWithExpressions { get; set; } = new();
 
     private readonly ILogger<MockHelper> log;
     private readonly string mocksPath;
@@ -27,8 +27,8 @@ public class CustomMockHelper
         foreach (var file in files)
         {
             var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(file))!;
-            if (entry.Request.Filters.Any(f => f.Field.ToLowerInvariant() == "expressions"))
-                this.ExpressionEntries.Add(entry);
+            if (entry.Request.Filters.Contains("expressions"))
+                this.EntriesWithExpressions.Add(entry);
             else
                 this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
         }
@@ -62,7 +62,7 @@ public class CustomMockHelper
             if(mocksWithContent.Any()) return mocksWithContent.First().Value;
 
             //search for expression filters
-            foreach (var mock in this.ExpressionEntries.Where(w => w.Request.Filters.Any(f => f.Field.ToLowerInvariant() == "expressions")))
+            foreach (var mock in this.EntriesWithExpressions)
             {
                 if (mock.Request.Matches(request))
                     return mock.Response;
