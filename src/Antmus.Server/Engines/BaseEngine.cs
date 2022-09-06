@@ -6,14 +6,14 @@ public abstract class BaseEngine
 {
     public readonly ILogger<RecorderEngine> Log;
 
-    public IList<string> RequestHeadersConfig { get; set; }
+    public IList<string> RequestHeadersToCalculateHashFrom { get; set; }
 
     public BaseEngine(ILogger<RecorderEngine> log, IConfiguration configuration)
     {
         this.Log = log;
-        this.RequestHeadersConfig = configuration.GetSection("RequestHeaders").Get<IList<string>>() ?? new List<string>();
+        this.RequestHeadersToCalculateHashFrom = configuration.GetSection("RequestHeadersToCalculateHashFrom").Get<IList<string>>() ?? new List<string>();
 
-        Log.LogJson("Request Headers", this.RequestHeadersConfig, LogLevel.Information);
+        Log.LogJson("Request Headers", this.RequestHeadersToCalculateHashFrom, LogLevel.Information);
     }
     public RequestIdentifier GetRequestIdentifier(HttpRequest request, string body, Dictionary<string, string> headers)
     {
@@ -43,16 +43,30 @@ public abstract class BaseEngine
 
         var body = GetBodyAsString(request);
         var headers = GetRequestHeaders(request);
+        var headersToCalculateHashFrom = GetRequestHeadersToCalculateHashFrom(request);
 
-        identifier = this.GetRequestIdentifier(request, body, headers);
+        identifier = this.GetRequestIdentifier(request, body, headersToCalculateHashFrom);
 
         return new Request { Content = body, Hash = identifier.Hash, Headers = headers, Method = identifier.Method, Path = identifier.Path };
     }
     private string GetBodyAsString(HttpRequest request)
     {
+        string GetBodyAsOtherType(HttpRequest request)
+        {
+            var memoryStream = new MemoryStream();
+            request.Body.CopyToAsync(memoryStream).Wait();
+            byte[] byteArray = memoryStream.ToArray();
+
+            var otherBody = string.Join("", byteArray.Select(s => s.ToString("X2")));
+            Log.LogJson("Other body", otherBody);
+            return otherBody;
+        }
+
         Log.LogDebug(new { request.Method, request.Path, request.ContentType });
         request.EnableBuffering();
         request.Body.Position = 0;
+        
+        if(request.ContentType is null) return GetBodyAsOtherType(request);
 
         if (IsJsonType(request.ContentType))
         {
@@ -68,7 +82,8 @@ public abstract class BaseEngine
             Log.LogJson("Json body", json);
             return json;
         }
-        else if (IsTextType(request.ContentType))
+
+        if (IsTextType(request.ContentType))
         {
             var textBody = new StreamReader(request.Body)
                 .ReadToEnd();
@@ -76,19 +91,20 @@ public abstract class BaseEngine
             return textBody;
         }
 
-        var memoryStream = new MemoryStream();
-        request.Body.CopyToAsync(memoryStream).Wait();
-        byte[] byteArray = memoryStream.ToArray();
-
-        var otherBody = string.Join("", byteArray.Select(s => s.ToString("X2")));
-        Log.LogJson("Other body", otherBody);
-        return otherBody;
+        return GetBodyAsOtherType(request);
     }
 
     private Dictionary<string, string> GetRequestHeaders(HttpRequest request)
     {
         return request.Headers
-            .Where(w => RequestHeadersConfig.Contains(w.Key) || w.Key.ToLower().StartsWith("antmus"))
+            .OrderBy(o => o.Key)
+            .ToDictionary(k => k.Key, v => v.Value.First())
+                ?? new Dictionary<string, string>();
+    }
+    private Dictionary<string, string> GetRequestHeadersToCalculateHashFrom(HttpRequest request)
+    {
+        return request.Headers
+            .Where(w => RequestHeadersToCalculateHashFrom.Contains(w.Key) || w.Key.ToLower().StartsWith("antmus"))
             .OrderBy(o => o.Key)
             .ToDictionary(k => k.Key, v => v.Value.First())
                 ?? new Dictionary<string, string>();

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Rpn = RPN.RPN;
 
 namespace Antmus.Server.Engines;
@@ -45,8 +46,8 @@ public record RequestIdentifier
             Path = request.Path,
             Method = request.Method,
             PathHash = hashPath,
-            ContentHash = request.Filters.Contains(nameof(Request.Content).ToLower()) ? hashBody : "",
-            HeadersHash = request.Filters.Contains(nameof(Request.Headers).ToLower()) ? hashHeaders : "",
+            ContentHash = request.Filters.Any(f => f.Field == (nameof(Request.Content).ToLower())) ? hashBody : "",
+            HeadersHash = request.Filters.Any(f => f.Field == (nameof(Request.Headers).ToLower())) ? hashHeaders : "",
             Hash = hash,
         };
         return identifier;
@@ -69,9 +70,9 @@ public record Request
     public string? Content { get; set; } = null;
     public string Hash { get; set; } = "";
 
-    public IList<string> Expressions { get; set; } = new List<string>();
+    public IList<(string Field, string Expression)> Expressions { get; set; } = new List<(string, string)>();
 
-    public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<(string Field, string Expression)> Filters { get; set; } = Enumerable.Empty<(string, string)>();
 
     public bool Matches(Request request)
     {
@@ -89,13 +90,46 @@ public record Request
             return false;
         }
 
-        //evaluate just Content expressions
-        foreach (var expression in this.Expressions)
+        //evaluate expressions
+        foreach (var (field, expression) in this.Expressions)
         {
             try
             {
-                if (Rpn.Evaluate(expression, request.Content))
-                    return true;
+                switch (field.ToLowerInvariant())
+                {
+                    case "method":
+                        {
+                            if (Rpn.Evaluate(expression, request.Method))
+                                return true;
+                            break;
+                        }
+                    case "path":
+                        {
+                            if (Rpn.Evaluate(expression, request.Path))
+                                return true;
+                            break;
+                        }
+                    case "content":
+                        {
+                            if (Rpn.Evaluate(expression, request.Content))
+                                return true;
+                            break;
+                        }
+                    case "headers":
+                        {
+                            var headerExpressionEntries = JsonSerializer.Deserialize<IEnumerable<(string Field, string Expression)>>(expression);
+                            if (headerExpressionEntries == null) break;
+                            foreach (var (f,exp) in headerExpressionEntries)
+                            {
+                                if (Rpn.Evaluate(exp, request.Headers.GetValueOrDefault(f) ?? ""))
+                                    return true;
+                                break;
+                            }
+                            break;
+                        }
+                }
+
+
             }
             catch
             {
@@ -104,4 +138,7 @@ public record Request
         }
         return false;
     }
+    public static IEnumerable<string> ExpressionTargets => typeof(Request)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(o => o.Name);
 }

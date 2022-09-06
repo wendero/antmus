@@ -27,7 +27,7 @@ public class CustomMockHelper
         foreach (var file in files)
         {
             var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(file))!;
-            if (entry.Request.Filters.Contains("expressions"))
+            if (entry.Request.Filters.Any(f => f.Field == "expressions"))
                 this.ExpressionEntries.Add(entry);
             else
                 this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
@@ -62,7 +62,7 @@ public class CustomMockHelper
             if(mocksWithContent.Any()) return mocksWithContent.First().Value;
 
             //search for expression filters
-            foreach (var mock in this.ExpressionEntries.Where(w => w.Request.Filters.Contains("expressions")))
+            foreach (var mock in this.ExpressionEntries.Where(w => w.Request.Filters.Any(f => f.Field == "expressions")))
             {
                 if (mock.Request.Matches(request))
                     return mock.Response;
