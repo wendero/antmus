@@ -57,10 +57,15 @@ public abstract class BaseEngine
         if (IsJsonType(request.ContentType))
         {
             var stream = new StreamReader(request.Body);
-            var json = stream.ReadToEndAsync().Result.Minify();
+            var body = stream.ReadToEndAsync().Result;
+            if (body.Length == 0)
+            {
+                Log.LogWarning("Missmatch: request's content type indicates body is in json format yet body is empty");
+                return "";
+            }
 
+            var json = body.Minify();
             Log.LogJson("Json body", json);
-
             return json;
         }
         else if (IsTextType(request.ContentType))
