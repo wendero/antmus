@@ -69,7 +69,7 @@ public class CustomMockHelper
             }
 
             //if after all there still have at least a Path
-            var mocksWithOnlyPath = this.Values.Where(w => w.Key.PathHash == identifier.PathHash && w.Key.ContentHash == "" && w.Key.HeadersHash == "");
+            var mocksWithOnlyPath = this.Values.Where(v => v.Key.PathHash == identifier.PathHash && v.Key.ContentHash == "" && v.Key.HeadersHash == "");
             if (mocksWithOnlyPath.Any()) return mocksWithOnlyPath.First().Value;
 
             return null;

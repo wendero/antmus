@@ -98,40 +98,29 @@ public record Request
                 {
                     case "method":
                         {
-                            if (Rpn.Evaluate(expression, request.Method))
+                            if (EvaluateExpression(request.Method, expression))
                                 return true;
                             break;
                         }
                     case "path":
                         {
-                            if (Rpn.Evaluate(expression, request.Path))
+                            if (EvaluateExpression(request.Path, expression))
                                 return true;
                             break;
                         }
                     case "content":
                         {
-                            if (Rpn.Evaluate(expression, request.Content))
+                            if (request.Content is not null && EvaluateExpression(request.Content, expression))
                                 return true;
                             break;
                         }
                     case "headers":
                         {
-                            var headerExpressionEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(expression);
-
-                            if (headerExpressionEntries == null) break;
-                            foreach (var (f,exp) in headerExpressionEntries)
-                            {
-                                var valueToCheckAgainst = request.Headers.GetValueOrDefault(f);
-                                if (valueToCheckAgainst == null) break;
-                                if (Rpn.Evaluate<string>(exp, valueToCheckAgainst) == "true" ||
-                                    new Regex(exp).IsMatch(valueToCheckAgainst))
-                                    return true;
-                            }
+                            if (EvaluateHeadersExpressions(request.Headers, expression))
+                                return true;
                             break;
                         }
                 }
-
-
             }
             catch
             {
@@ -140,7 +129,32 @@ public record Request
         }
         return false;
     }
-    public static IEnumerable<string> ExpressionTargets => typeof(Request)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Select(o => o.Name);
+
+    private static bool EvaluateHeadersExpressions(Dictionary<string, string> headers, string expressions)
+    {
+        var headerExpressionEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(expressions);
+
+        if (headerExpressionEntries == null) return false;
+        foreach (var (f, exp) in headerExpressionEntries)
+        {
+            var valueToCheckAgainst = headers.GetValueOrDefault(f);
+            if (valueToCheckAgainst == null) continue;
+            if (EvaluateExpression(valueToCheckAgainst, exp))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool EvaluateExpression(string valueToCheckAgainst, string expression)
+    {
+        try
+        {
+            return new Regex(expression).IsMatch(valueToCheckAgainst) || Rpn.Evaluate(expression, valueToCheckAgainst) == "true";
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
