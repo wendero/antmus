@@ -5,7 +5,7 @@ namespace Antmus.Server;
 public class CustomMockHelper
 {
     private Dictionary<RequestIdentifier, Response> Values { get; set; } = new();
-    private List<Entry> ExpressionEntries { get; set; } = new();
+    private List<Entry> EntriesWithExpressions { get; set; } = new();
 
     private readonly ILogger<MockHelper> log;
     private readonly string mocksPath;
@@ -28,7 +28,7 @@ public class CustomMockHelper
         {
             var entry = JsonSerializer.Deserialize<Entry>(File.ReadAllText(file))!;
             if (entry.Request.Filters.Contains("expressions"))
-                this.ExpressionEntries.Add(entry);
+                this.EntriesWithExpressions.Add(entry);
             else
                 this.Values.Add(RequestIdentifier.Create(entry.Request), entry.Response);
         }
@@ -62,14 +62,14 @@ public class CustomMockHelper
             if(mocksWithContent.Any()) return mocksWithContent.First().Value;
 
             //search for expression filters
-            foreach (var mock in this.ExpressionEntries.Where(w => w.Request.Filters.Contains("expressions")))
+            foreach (var mock in this.EntriesWithExpressions)
             {
                 if (mock.Request.Matches(request))
                     return mock.Response;
             }
 
             //if after all there still have at least a Path
-            var mocksWithOnlyPath = this.Values.Where(w => w.Key.PathHash == identifier.PathHash && w.Key.ContentHash == "" && w.Key.HeadersHash == "");
+            var mocksWithOnlyPath = this.Values.Where(v => v.Key.PathHash == identifier.PathHash && v.Key.ContentHash == "" && v.Key.HeadersHash == "");
             if (mocksWithOnlyPath.Any()) return mocksWithOnlyPath.First().Value;
 
             return null;

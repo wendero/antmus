@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Rpn = RPN.RPN;
 
 namespace Antmus.Server.Engines;
@@ -69,8 +70,7 @@ public record Request
     public string? Content { get; set; } = null;
     public string Hash { get; set; } = "";
 
-    public IList<string> Expressions { get; set; } = new List<string>();
-
+    public Dictionary<string, string> Expressions { get; set; } = new Dictionary<string, string>();
     public IEnumerable<string> Filters { get; set; } = Enumerable.Empty<string>();
 
     public bool Matches(Request request)
@@ -79,7 +79,7 @@ public record Request
         try
         {
             if (!(request.Method == this.Method || this.Method.Split(' ', ',', ';', '-', '|').Contains(request.Method))) return false;
-            if (!(request.Path == this.Path || new Regex($"^{this.Path}$").IsMatch(request.Path))) return false;
+            if (!(request.Path.ToLowerInvariant() == this.Path.ToLowerInvariant() || new Regex($"^{this.Path}$").IsMatch(request.Path))) return false;
 
             if (!this.Expressions.Any())
                 return true;
@@ -89,13 +89,38 @@ public record Request
             return false;
         }
 
-        //evaluate just Content expressions
-        foreach (var expression in this.Expressions)
+        //evaluate expressions
+        foreach (var (field, expression) in this.Expressions)
         {
             try
             {
-                if (Rpn.Evaluate(expression, request.Content))
-                    return true;
+                switch (field.ToLowerInvariant())
+                {
+                    case "method":
+                        {
+                            if (EvaluateExpression(request.Method, expression))
+                                return true;
+                            break;
+                        }
+                    case "path":
+                        {
+                            if (EvaluateExpression(request.Path, expression))
+                                return true;
+                            break;
+                        }
+                    case "content":
+                        {
+                            if (request.Content is not null && EvaluateExpression(request.Content, expression))
+                                return true;
+                            break;
+                        }
+                    case "headers":
+                        {
+                            if (EvaluateHeadersExpressions(request.Headers, expression))
+                                return true;
+                            break;
+                        }
+                }
             }
             catch
             {
@@ -103,5 +128,33 @@ public record Request
             }
         }
         return false;
+    }
+
+    private static bool EvaluateHeadersExpressions(Dictionary<string, string> headers, string expressions)
+    {
+        var headerExpressionEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(expressions);
+
+        if (headerExpressionEntries == null) return false;
+        foreach (var (f, exp) in headerExpressionEntries)
+        {
+            var valueToCheckAgainst = headers.GetValueOrDefault(f);
+            if (valueToCheckAgainst == null) continue;
+            if (EvaluateExpression(valueToCheckAgainst, exp))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool EvaluateExpression(string valueToCheckAgainst, string expression)
+    {
+        try
+        {
+            return new Regex(expression).IsMatch(valueToCheckAgainst) || Rpn.Evaluate(expression, valueToCheckAgainst) == "true";
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

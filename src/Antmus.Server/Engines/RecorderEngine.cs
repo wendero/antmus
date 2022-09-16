@@ -57,7 +57,7 @@ public class RecorderEngine : BaseEngine, IHttpEngine
 
         foreach (var requestHeader in httpRequest.Headers)
         {
-            if (this.RequestHeadersConfig.Contains(requestHeader.Key))
+            if (this.RequestHeadersToCalculateHashFrom.Contains(requestHeader.Key))
                 client.DefaultRequestHeaders.Add(requestHeader.Key, requestHeader.Value.First());
         }
 
